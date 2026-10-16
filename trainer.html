@@ -76,6 +76,18 @@
           </label>
         </div>
 
+        <div class="card qa-card">
+          <div class="qa-head">
+            <label class="switch"><input id="qa-open" type="checkbox"> Permite întrebări de la participanți</label>
+            <span id="qa-state"></span>
+          </div>
+          <div id="qa-body" hidden>
+            <p class="muted" style="font-size:14px;margin:8px 0 0">Primul participant care apasă „Kérdezek” vorbește în maghiară; tu auzi traducerea pe acest dispozitiv (folosește căști). Traducerea ta către sală intră automat în pauză cât vorbește participantul.</p>
+            <div id="qa-log"></div>
+            <button id="qa-release" class="secondary" hidden style="margin-top:10px">Încheie întrebarea</button>
+          </div>
+        </div>
+
         <div class="card">
           <span class="label">Ce se aude (original și traducere)</span>
           <div id="log"></div>

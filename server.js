@@ -138,6 +138,8 @@ app.post('/api/trainer/language', requirePin, (req, res) => {
 });
 
 app.post('/api/trainer/stop', requirePin, async (_req, res) => {
+  qa.open = false;
+  await releaseFloor();
   await deleteSession();
   res.json({ ok: true });
 });
@@ -181,7 +183,116 @@ app.post('/api/heartbeat', (req, res) => {
   const clientId = String(req.body?.clientId || '');
   const entry = session?.assigned.get(clientId);
   if (entry) entry.last = Date.now();
-  res.json({ active: !!session, sessionId: session?.id || null });
+  res.json({
+    active: !!session,
+    sessionId: session?.id || null,
+    qaOpen: qa.open,
+    floorBusy: !!qa.floor && qa.floor.clientId !== clientId,
+    floorMine: !!qa.floor && qa.floor.clientId === clientId,
+  });
+});
+
+// ---------- Questions from participants (HU → trainer's language) ----------
+// The trainer opens questions; a participant taps "Kérdezek" and, if nobody else is speaking,
+// gets the floor (first come, first served). Each turn gets its own fresh Palabra session:
+// the participant's phone publishes the mic, the trainer page subscribes and hears the translation.
+const FLOOR_MAX_MS = 3 * 60_000;
+const qa = { open: false, floor: null }; // floor: { clientId, since, rev:{id, webrtcUrl, publisher, subscriber} }
+
+const TARGET_CODES = { en: 'en-us', ro: 'ro' };
+
+function buildReverseTask(target) {
+  return {
+    input_stream: { content_type: 'audio', source: { type: 'webrtc' } },
+    output_stream: { content_type: 'audio', target: { type: 'webrtc' } },
+    pipeline: {
+      preprocessing: { enable_vad: true, vad_threshold: 0.5, vad_left_padding: 1, vad_right_padding: 1, pre_vad_denoise: false, pre_vad_dsp: true, record_tracks: [] },
+      transcription: {
+        source_language: 'hu',
+        detectable_languages: [],
+        segment_confirmation_silence_threshold: 0.7,
+        sentence_splitter: { enabled: true },
+        verification: { auto_transcription_correction: false, transcription_correction_style: null },
+      },
+      translations: [{
+        translate_partial_transcriptions: false,
+        target_language: TARGET_CODES[target] || 'en-us',
+        speech_generation: {
+          voice_cloning: false,
+          voice_id: 'default_high',
+          voice_timbre_detection: { enabled: true, high_timbre_voices: ['default_high'], low_timbre_voices: ['default_low'] },
+        },
+      }],
+      translation_queue_configs: { global: { desired_queue_level_ms: 8000, max_queue_level_ms: 24000, auto_tempo: true, min_tempo: 1.0, max_tempo: 1.15 } },
+      allowed_message_types: ['translated_transcription', 'partial_translated_transcription', 'partial_transcription', 'validated_transcription'],
+    },
+  };
+}
+
+async function releaseFloor() {
+  const f = qa.floor;
+  qa.floor = null;
+  if (f?.rev?.id) {
+    try { await palabra('DELETE', `/session-storage/sessions/${f.rev.id}`); }
+    catch (e) { console.warn('Nu am putut închide sesiunea de întrebare:', e.message); }
+  }
+}
+
+function floorExpired() {
+  return qa.floor && Date.now() - qa.floor.since > FLOOR_MAX_MS;
+}
+
+app.post('/api/trainer/qa', requirePin, async (req, res) => {
+  qa.open = !!req.body?.open;
+  if (!qa.open) await releaseFloor();
+  res.json({ open: qa.open });
+});
+
+app.get('/api/trainer/qa', requirePin, async (_req, res) => {
+  if (floorExpired()) await releaseFloor();
+  const f = qa.floor;
+  res.json({
+    open: qa.open,
+    floor: f ? { since: f.since, sessionId: f.rev.id, streamUrl: f.rev.webrtcUrl, accessToken: f.rev.subscriber } : null,
+  });
+});
+
+app.post('/api/trainer/qa/release', requirePin, async (_req, res) => {
+  await releaseFloor();
+  res.json({ ok: true });
+});
+
+app.post('/api/floor/request', async (req, res) => {
+  const clientId = String(req.body?.clientId || '').slice(0, 64);
+  if (!clientId) return res.status(400).json({ error: 'clientId lipsă' });
+  if (!session || !qa.open) return res.json({ granted: false, closed: true });
+  if (floorExpired()) await releaseFloor();
+  if (qa.floor && qa.floor.clientId !== clientId) return res.json({ granted: false, busy: true });
+  try {
+    if (!qa.floor) {
+      const placeholder = { clientId, since: Date.now(), rev: null };
+      qa.floor = placeholder; // reserve before the async call so two taps can't both win
+      const json = await palabra('POST', '/session-storage/session', {
+        data: { publisher_count: 1, subscriber_count: 2, publisher_can_subscribe: true },
+      });
+      if (qa.floor !== placeholder) return res.json({ granted: false, busy: true });
+      const d = json.data;
+      placeholder.rev = { id: d.id, webrtcUrl: d.webrtc_url, publisher: d.publisher, subscriber: (d.subscriber || [])[0] };
+      console.log(`Întrebare: participant ${clientId.slice(0, 6)} are cuvântul (sesiune ${d.id})`);
+    }
+    const target = session.sourceLang || 'en';
+    res.json({ granted: true, streamUrl: qa.floor.rev.webrtcUrl, accessToken: qa.floor.rev.publisher, task: buildReverseTask(target), maxMs: FLOOR_MAX_MS });
+  } catch (e) {
+    console.error(e);
+    if (qa.floor?.clientId === clientId) qa.floor = null;
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.post('/api/floor/release', async (req, res) => {
+  const clientId = String(req.body?.clientId || '');
+  if (qa.floor?.clientId === clientId) await releaseFloor();
+  res.json({ ok: true });
 });
 
 function lanAddress() {

@@ -112,3 +112,15 @@ body.qr-big .qr-card h2::after { content: " — Szkennelje be a fordításhoz"; 
 .tips { text-align: left; font-size: 14px; color: var(--muted); margin: 0; padding-left: 18px; }
 #debug { text-align: left; font-size: 11px; white-space: pre-wrap; max-height: 200px; overflow: auto; width: 100%; }
 audio { display: none; }
+
+/* questions */
+.qa { width: 100%; display: grid; gap: 10px; padding-top: 18px; margin-top: 6px; border-top: 1px solid var(--line); }
+#ask-meter { height: 100%; width: 0; background: var(--accent); transition: width 80ms linear; }
+.qa-card .qa-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.switch { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+.switch input { width: 20px; height: 20px; }
+#qa-state { font-weight: 600; }
+#qa-state[data-kind="live"] { color: var(--live); }
+#qa-log { max-height: 220px; overflow-y: auto; display: grid; gap: 6px; margin-top: 10px; }
+#qa-log .line.q .txt { font-style: italic; }
+#qa-log .line.a .txt { color: var(--accent); font-weight: 500; }
