@@ -109,7 +109,11 @@ app.post('/api/trainer/login', requirePin, (_req, res) => res.json({ ok: true, a
 // Trainer: start (or resume) the training session
 app.post('/api/trainer/start', requirePin, async (req, res) => {
   try {
-    if (!session) {
+    // Always start from a fresh Palabra session. Reusing an old one after the trainer
+    // disconnected fails with "Session verification failed" (Palabra closes it on its side).
+    // Listeners notice the new session id via /api/heartbeat and reconnect by themselves.
+    if (session) await deleteSession();
+    {
       // The plan may cap subscribers per session — step down until Palabra accepts.
       const sizes = [...new Set([MAX_LISTENERS, 50, 30, 20, 10].filter(n => n <= MAX_LISTENERS))];
       let lastErr;
