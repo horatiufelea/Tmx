@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: tmx-tolmacs
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /hallgato
+    envVars:
+      - key: PALABRA_API_KEY
+        sync: false
+      - key: TRAINER_PIN
+        sync: false
+      - key: MAX_LISTENERS
+        value: "100"

@@ -1,0 +1,21 @@
+{
+  "name": "tmx-tolmacs",
+  "version": "1.0.0",
+  "description": "Traducere vocală live EN/RO → HU pentru traininguri (Palabra API)",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@palabra-ai/translator": "0.0.11",
+    "express": "^5.2.1",
+    "livekit-client": "2.13.0",
+    "qrcode": "^1.5.4"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}

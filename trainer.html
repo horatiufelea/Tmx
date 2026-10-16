@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TMX Tolmács — Trainer</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section id="login" class="login">
+    <form id="login-form" class="card stack">
+      <h1>TMX Tolmács</h1>
+      <p class="muted">Pagina trainerului. Introdu PIN-ul.</p>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN" required>
+      <p id="pin-error" class="error" hidden>PIN greșit.</p>
+      <button type="submit">Intră</button>
+    </form>
+  </section>
+
+  <main id="app" class="trainer" hidden>
+    <header>
+      <div>
+        <h1>TMX Tolmács</h1>
+        <span id="status">Oprit</span>
+      </div>
+      <div class="row">
+        <button id="start">Pornește traducerea</button>
+        <button id="pause" class="secondary" hidden>Pauză</button>
+        <button id="stop" class="danger" hidden>Oprește</button>
+      </div>
+    </header>
+
+    <p id="error" hidden></p>
+
+    <div class="grid">
+      <div class="stack">
+        <div class="card stack">
+          <div class="row" style="justify-content: space-between;">
+            <div>
+              <span class="label">Vorbesc în</span>
+              <div class="seg" role="group" aria-label="Limba sursă">
+                <button data-lang="en" aria-pressed="true">English</button>
+                <button data-lang="ro" aria-pressed="false">Română</button>
+              </div>
+            </div>
+            <div>
+              <span class="label">Participanții aud</span>
+              <strong>Magyar (maghiară)</strong>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="voice">Voce traducere</label>
+            <select id="voice">
+              <option value="female">Feminină</option>
+              <option value="male">Masculină</option>
+              <option value="auto">Automat (după vocea vorbitorului)</option>
+              <option value="clone">Clonată (sună ca vorbitorul)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="mic">Microfon</label>
+            <select id="mic"></select>
+            <div class="meter"><div id="meter-bar"></div></div>
+          </div>
+          <label class="row muted" style="gap:8px; font-size:14px;">
+            <input id="monitor" type="checkbox" style="width:auto">
+            Ascult și eu traducerea pe acest laptop (doar cu căști, altfel microfonul preia sunetul)
+          </label>
+        </div>
+
+        <div class="card">
+          <span class="label">Ce se aude (original și traducere)</span>
+          <div id="log"></div>
+          <div id="partial"></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card qr-card stack">
+          <h2>Cod QR pentru participanți</h2>
+          <div id="qr"></div>
+          <a id="qr-url" target="_blank" rel="noopener"></a>
+          <button id="fullscreen-qr" class="secondary">Afișează mare / închide</button>
+        </div>
+        <div class="card">
+          <span class="label">Participanți conectați</span>
+          <div id="listeners" class="big-number">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/trainer.app.js"></script>
+</body>
+</html>

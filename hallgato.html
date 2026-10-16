@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f8a3b">
+  <title>Élő fordítás</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="listener">
+    <section id="v-start" class="panel">
+      <div class="ear" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </div>
+      <h1>Élő magyar fordítás</h1>
+      <p class="msg">Csatlakoztassa a fülhallgatóját, majd nyomja meg a gombot.</p>
+      <button id="btn-start">Hallgatás indítása</button>
+      <ul class="tips">
+        <li>Tartsa bekapcsolva a telefon képernyőjét.</li>
+        <li>A hangerőt a telefon gombjaival állíthatja.</li>
+      </ul>
+    </section>
+
+    <section id="v-waiting" class="panel" hidden>
+      <div class="bars" aria-hidden="true" style="opacity:.35"><span></span><span></span><span></span><span></span><span></span></div>
+      <h1>Várakozás…</h1>
+      <p class="msg">A fordítás hamarosan indul. Ne zárja be az oldalt.</p>
+    </section>
+
+    <section id="v-live" class="panel" hidden>
+      <span class="live-dot">ÉLŐ</span>
+      <div class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <h1>Ön a magyar fordítást hallja</h1>
+      <p class="msg">Ha szünet van az előadásban, a fordítás is szünetel.</p>
+      <p id="conn" class="muted"></p>
+      <button id="tap-audio" hidden>Hang bekapcsolása</button>
+    </section>
+
+    <section id="v-ended" class="panel" hidden>
+      <h1>A fordítás véget ért</h1>
+      <p class="msg">Köszönjük a figyelmet! Ha újraindul, az oldal automatikusan csatlakozik.</p>
+    </section>
+
+    <section id="v-full" class="panel" hidden>
+      <h1>Megtelt</h1>
+      <p class="msg">Jelenleg nincs szabad hely. Kérjük, szóljon a szervezőnek.</p>
+    </section>
+
+    <pre id="debug" hidden></pre>
+  </main>
+  <script src="/listener.app.js"></script>
+</body>
+</html>
